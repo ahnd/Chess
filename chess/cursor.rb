@@ -32,12 +32,13 @@ MOVES = {
 }
 
 class Cursor
-  attr_accessor :cursor_pos
+  attr_accessor :cursor_pos, :selected
   attr_reader :board
 
   def initialize(cursor_pos, board)
     @cursor_pos = cursor_pos
     @board = board
+    @selected = false
   end
 
   def get_input
@@ -48,7 +49,6 @@ class Cursor
   # SIDE EFFECTS: moves cursor position, toggles select, or exits program
   # RETURNs cursor position
   def render
-    board.render
     get_input
   end
 
@@ -86,24 +86,25 @@ class Cursor
   def handle_key(key)
     case key
     when :return, :space
-      @cursor_pos
+      self.selected = !selected
+      cursor_pos
     when :left, :right, :up, :down
-      @cursor_pos = add_positions(@cursor_pos, MOVES[key])
+      self.cursor_pos = add_positions(cursor_pos, MOVES[key])
     when :ctrl_c
       Process.exit(0)
     end
   end
 
   def update_pos(diff)
-    potential_pos = add_positions(@cursor_pos, diff)
-    @cursor_pos = potential_pos unless Board.valid?(potential_pos)
+    potential_pos = add_positions(cursor_pos, diff)
+    self.cursor_pos = potential_pos unless Board.valid?(potential_pos)
   end
 
-  #TODO: Make sure this isn't dangerous.
   def add_positions(pos, diff)
-    pos = pos.dup
+    # pos = pos.dup
     pos.each_with_index do |el, idx|
       pos[idx] += diff[idx]
+      pos[idx] %= 8
     end
   end
 
